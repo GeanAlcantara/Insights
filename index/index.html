@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroInsight - Sistema de Analise Empresarial</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+<script id="chartJsCdn" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body class="app-layout">
+
+<!-- ╔══════════════════════════ SIDEBAR ══════════════════════════╗ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div>
+      <h1>Agro<span>Insight</span></h1>
+      <p>Análise Empresarial</p>
+    </div>
+    <button class="sidebar-close-btn" type="button" data-action="close-sidebar" aria-label="Fechar menu">✕</button>
+  </div>
+
+  <nav class="nav-scroll" aria-label="Navegacao principal">
+    <div class="nav-section">Principal</div>
+    <button class="nav-item active" type="button" data-page="dashboard">
+      <span class="nav-label">Dashboard</span>
+      <span class="nav-divider"></span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="4" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="10" width="6" height="10" rx="1.5"/></svg>
+      </span>
+    </button>
+    <button class="nav-item" type="button" data-page="relatorios">
+      <span class="nav-label">Relatórios</span>
+      <span class="nav-divider"></span>
+      <span class="nav-badge" id="navBadgeRelatorios">0</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5h7.5L18 8v11.5H7z"/><path d="M14.5 4.5V8H18"/><path d="M9.2 11.5h6.1"/><path d="M9.2 14.5h6.1"/><path d="M9.2 17.5h4.2"/></svg>
+      </span>
+    </button>
+    <button class="nav-item" type="button" data-page="analises">
+      <span class="nav-label">Análises</span>
+      <span class="nav-divider"></span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15.5l4-4 3 2.5 5-6"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M19.5 19.5 21 21"/></svg>
+      </span>
+    </button>
+
+    <div class="nav-section">Agronomia</div>
+    <button class="nav-item" type="button" data-page="culturas">
+      <span class="nav-label">Controle de Estoque</span>
+      <span class="nav-divider"></span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5V8.5"/><path d="M12 11.5c-2.6 0-4.7-2.1-4.7-4.7 2.6 0 4.7 2.1 4.7 4.7Z" fill="currentColor" stroke="none"/><path d="M12 14.5c2.6 0 4.7-2.1 4.7-4.7-2.6 0-4.7 2.1-4.7 4.7Z" fill="currentColor" stroke="none"/><path d="M8 19.5h8"/></svg>
+      </span>
+    </button>
+    <button class="nav-item" type="button" data-page="solo">
+      <span class="nav-label">Solo & Clima</span>
+      <span class="nav-divider"></span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="17.2" cy="7.2" r="2.2"/><path d="M4.5 16.5c2.2-2.2 4.5-3.3 7-3.3s4.8 1.1 8 3.3"/><path d="M4.5 19.2h15"/></svg>
+      </span>
+    </button>
+    <button class="nav-item" type="button" data-page="mercado">
+      <span class="nav-label">Mercado</span>
+      <span class="nav-divider"></span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 18.5h15"/><path d="M6 15l4-4 3 3 5-6"/><path d="M15.5 8H18.5V11"/></svg>
+      </span>
+    </button>
+
+    <div class="nav-section">Gestão</div>
+    <button class="nav-item" type="button" data-page="clientes">
+      <span class="nav-label">Clientes</span>
+      <span class="nav-divider"></span>
+      <span class="nav-badge" id="navBadgeClientes">0</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="2.5"/><path d="M3 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="16.5" cy="7" r="2"/><path d="M19 18c0-2.5-1.8-4-4-4.5"/></svg>
+      </span>
+    </button>
+    <div class="nav-section">Operacional</div>
+    <button class="nav-item" type="button" data-page="financeiro">
+      <span class="nav-label">Financeiro</span>
+      <span class="nav-divider"></span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5h15"/><rect x="6" y="12" width="2.8" height="5.5" rx="0.8" fill="currentColor" stroke="none"/><rect x="10.6" y="9" width="2.8" height="8.5" rx="0.8" fill="currentColor" stroke="none"/><rect x="15.2" y="6" width="2.8" height="11.5" rx="0.8" fill="currentColor" stroke="none"/></svg>
+      </span>
+    </button>
+    <button class="nav-item" type="button" data-page="alertas">
+      <span class="nav-label">Alertas</span>
+      <span class="nav-divider"></span>
+      <span class="nav-badge danger" id="navBadgeAlertas">3</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5 18.7 18H5.3L12 5.5Z"/><path d="M12 10v3.9"/><circle cx="12" cy="16.8" r="0.9" fill="currentColor" stroke="none"/></svg>
+      </span>
+    </button>
+    <button class="nav-item" type="button" data-page="config">
+      <span class="nav-label">Configurações</span>
+      <span class="nav-divider"></span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.2"/><circle cx="15.5" cy="15.5" r="2.2"/><path d="M4.5 8h2.3"/><path d="M11.2 8h8.3"/><path d="M4.5 15.5h8.8"/><path d="M17.7 15.5h1.8"/></svg>
+      </span>
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="company-tag">
+      <div class="company-avatar">AG</div>
+      <div class="company-info">
+        <div class="company-name">AgroTech Brasil</div>
+        <div class="company-plan">Plano Enterprise</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- BACKDROP MOBILE -->
+<div class="sidebar-backdrop hidden" id="sidebarBackdrop" data-action="close-sidebar"></div>
+
+<!-- ╔══════════════════════════ MAIN ══════════════════════════╗ -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" type="button" data-action="toggle-sidebar" aria-label="Menu">☰ Menu</button>
+      <div>
+        <div class="topbar-title" id="pageTitle">Visão Geral — Dashboard</div>
+        <div style="display:flex;align-items:center;">
+          <div class="topbar-meta">
+            <span class="pulse-dot"></span>
+            <span id="topbarMetaText" aria-live="polite">Safra 2025/26 · Atualizado há 3 minutos</span>
+          </div>
+          <span id="fbStatusDot" aria-hidden="true" title="Aguardando conexão com Firebase..." style="width:9px;height:9px;border-radius:50%;background:var(--danger);display:inline-block;margin-left:8px;flex-shrink:0;transition:background 0.4s ease, box-shadow 0.4s ease;"></span>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" id="themeToggleBtn" type="button" aria-label="Alternar tema" data-action="toggle-theme">Tema: Claro</button>
+      <button class="btn btn-ghost" id="exportPdfBtn" type="button" aria-label="Exportar pagina atual para impressao" data-action="export-pdf">🖨️ Exportar PDF</button>
+      <button class="btn btn-gold" id="topActionBtn" type="button" aria-label="Executar acao principal" data-action="top-action">Novo Relatório</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="global-filter-bar">
+      <div>
+        <div class="global-filter-title">Filtros Globais</div>
+        <div class="global-filter-copy">Refine KPIs, fluxo de caixa e movimentações por período.</div>
+      </div>
+      <div class="global-filter-controls">
+        <input class="option-input" id="globalStartDate" type="date" aria-label="Data inicial do filtro global">
+        <input class="option-input" id="globalEndDate" type="date" aria-label="Data final do filtro global">
+        <button class="btn btn-ghost btn-sm" type="button" data-action="clear-global-filter">Limpar filtro</button>
+      </div>
+      <div class="global-filter-summary" id="globalFilterSummary">Sem filtro de período.</div>
+    </div>
+
+    <!-- ══════════ PANEL: DASHBOARD ══════════ -->
+    <div class="section-panel active" id="panel-dashboard">
+      <div class="tab-bar">
+        <button class="tab active" data-tab="geral" >Visão Geral</button>
+        <button class="tab" data-tab="operacional" >Operacional</button>
+        <button class="tab" data-tab="financeiro" >Financeiro</button>
+        <button class="tab" data-tab="ambiental" >Ambiental</button>
+      </div>
+
+      <div data-tab-content="geral">
+      <!-- KPI GRID -->
+      <div class="kpi-grid" id="dashKpiList">
+        <div class="skeleton" style="height:110px"></div>
+        <div class="skeleton" style="height:110px"></div>
+        <div class="skeleton" style="height:110px"></div>
+        <div class="skeleton" style="height:110px"></div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Produção Mensal</div>
+              <div class="chart-subtitle">Sacas colhidas vs. meta — Safra 2025/26</div>
+            </div>
+            <span class="chart-badge green">Em andamento</span>
+          </div>
+          <div class="chart-wrap"><canvas id="prodChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Culturas</div>
+              <div class="chart-subtitle">Distribuição de área</div>
+            </div>
+            <span class="chart-badge gold">4 culturas</span>
+          </div>
+          <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- BRIDGE SECTION -->
+      <div class="kpi-grid" id="bridgeKpiList" style="margin-bottom:0"></div>
+      </div><!-- /geral tab -->
+
+      <div data-tab-content="operacional" style="display:none">
+        <div class="section-sub" style="margin-bottom:20px;">Indicadores de plantio, frota e campo na safra atual.</div>
+        <div class="kpi-grid" id="dashOpKpiList"></div>
+        <div class="chart-card" style="animation-delay:0.2s">
+          <div class="chart-header"><div><div class="chart-title">Registros Operacionais Recentes</div><div class="chart-subtitle">Últimas atividades e gastos registrados</div></div></div>
+          <div id="dashOpRegistros" style="min-height:80px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.85rem;">Carregando registros...</div>
+        </div>
+      </div>
+
+      <div data-tab-content="financeiro" style="display:none">
+        <div class="section-sub" style="margin-bottom:20px;">Resumo financeiro da safra atual em tempo real.</div>
+        <div class="finance-summary" id="dashFinanceSummary"></div>
+        <div class="chart-card" style="animation-delay:0.2s">
+          <div class="chart-title" style="margin-bottom:16px">Despesas por Categoria</div>
+          <table class="expense-table">
+            <thead><tr><th>Categoria</th><th>Valor</th><th>% Total</th><th>Variação</th></tr></thead>
+            <tbody id="dashExpenseBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div data-tab-content="ambiental" style="display:none">
+        <div class="section-sub" style="margin-bottom:20px;">Parâmetros de solo e condições climáticas atuais.</div>
+        <div class="kpi-grid" id="dashSoilKpis"></div>
+        <div class="soil-grid" id="dashSoilGrid"></div>
+      </div>
+    </div>
+    <!-- /dashboard -->
+
+    <!-- ══════════ PANEL: RELATÓRIOS ══════════ -->
+    <div class="section-panel" id="panel-relatorios">
+
+      <!-- MODAL DE REGISTRO -->
+      <div class="register-modal hidden" id="registerModal">
+        <div class="register-head">
+          <div class="register-head-copy">
+            <div class="option-title">Novo Relatório de Campo</div>
+            <div class="option-helper">Preencha os módulos abaixo e salve cada card individualmente.</div>
+          </div>
+          <div class="register-actions">
+            <div class="form-switcher">
+              <button class="form-switch-btn active" type="button" data-ctx="operacional" >Operacional</button>
+              <button class="form-switch-btn" type="button" data-ctx="financeiro" >Financeiro</button>
+              <button class="form-switch-btn" type="button" data-ctx="veiculo" >Veículo</button>
+            </div>
+            <button class="btn btn-ghost btn-sm" type="button" data-action="close-register">Fechar ✕</button>
+          </div>
+        </div>
+        <div class="register-status" id="registerStatus">Contexto operacional ativo. Preencha o módulo desejado e salve individualmente.</div>
+
+        <div class="register-modules">
+
+          <!-- MÓDULO 1: Cadastro de Cliente -->
+          <div class="module-card" data-mod-ctx="operacional">
+            <div class="module-head">
+              <div class="module-head-left">
+                <span class="module-icon">👤</span>
+                <div>
+                  <div class="module-title">Cadastro de Cliente</div>
+                  <div class="module-copy">Base comercial com origem, culturas, aplicação e dados de contato.</div>
+                </div>
+              </div>
+              <span class="module-chip">Operacional</span>
+            </div>
+            <div class="registry-form-grid">
+              <div class="registry-field">
+                <div class="option-label">Origem do Cliente <span class="required-mark">*</span></div>
+                <select class="option-select" id="fClientOrigem">
+                  <option value="">Selecione</option>
+                  <option>Campus</option>
+                  <option>Biocarbo Origem</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+              <div class="registry-field registry-collapsible is-collapsed" id="fClientOrigemOutroWrap">
+                <div class="option-label">Origem — Outros</div>
+                <input class="option-input" id="fClientOrigemOutro" placeholder="Informe a origem">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Nome do Cliente <span class="required-mark">*</span></div>
+                <input class="option-input" id="fClientNome" placeholder="Nome completo">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Propriedade</div>
+                <select class="option-select" id="fClientPropriedade">
+                  <option value="">Selecione</option>
+                  <option>Biocarbo/Campus</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+              <div class="registry-field registry-collapsible is-collapsed" id="fClientPropOutroWrap">
+                <div class="option-label">Propriedade — Outros</div>
+                <input class="option-input" id="fClientPropOutro" placeholder="Nome da propriedade">
+              </div>
+              <div class="registry-field span-2">
+                <div class="option-label">Coordenadas Geográficas</div>
+                <input class="option-input" id="fClientCoord" placeholder="Cole as coordenadas do Google Maps">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Cidade/UF</div>
+                <input class="option-input" id="fClientCidade" placeholder="Ex: Rio Verde/GO">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Telefone/WhatsApp</div>
+                <input class="option-input" id="fClientTel" inputmode="numeric" data-numeric-only="true" placeholder="Somente números">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">WhatsApp?</div>
+                <select class="option-select" id="fClientWpp">
+                  <option value="">Selecione</option>
+                  <option>Sim</option>
+                  <option>Não</option>
+                </select>
+              </div>
+              <div class="registry-field">
+                <div class="option-label">E-mail</div>
+                <input class="option-input" id="fClientEmail" type="email" placeholder="email@empresa.com">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Data do 1º Contato</div>
+                <input class="option-input" id="fClientContato" type="date">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Responsável</div>
+                <select class="option-select" id="fClientResponsavel">
+                  <option value="">Selecione</option>
+                  <option>Campus</option>
+                  <option>Biocarbo</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+              <div class="registry-field registry-collapsible is-collapsed" id="fClientRespOutroWrap">
+                <div class="option-label">Responsável — Outros</div>
+                <input class="option-input" id="fClientRespOutro" placeholder="Nome do responsável">
+              </div>
+              <div class="registry-field span-2">
+                <div class="option-label">Culturas que Trabalha (múltipla seleção)</div>
+                <select class="option-select" id="fClientCulturas" multiple style="height:110px">
+                  <option>Soja</option><option>Milho Safra</option><option>Milho Safrinha</option>
+                  <option>Sorgo</option><option>Girassol</option><option>Algodão</option>
+                  <option>Arroz Sequeiro</option><option>Feijão</option><option>Café</option><option>Citros</option>
+                </select>
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Forma de Pagamento</div>
+                <select class="option-select" id="fClientPgto">
+                  <option value="">Selecione</option>
+                  <option>À Vista</option>
+                  <option>Prazo Safra/Safrinha</option>
+                  <option>Duplicata Prazo Safra</option>
+                  <option>CPR</option>
+                  <option>Bolsa de Insumos</option>
+                  <option value="Barter">Barter</option>
+                </select>
+              </div>
+              <div class="registry-field registry-collapsible is-collapsed" id="fClientBarterWrap">
+                <div class="option-label">Se Barter — operadora</div>
+                <input class="option-input" id="fClientBarter" placeholder="Nome da operadora">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Produto</div>
+                <select class="option-select" id="fClientProduto">
+                  <option value="">Selecione</option>
+                  <option>Biopirol</option>
+                  <option>Bio+Complex</option>
+                </select>
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Tipo de Cliente</div>
+                <select class="option-select" id="fClientTipo">
+                  <option value="">Selecione</option>
+                  <option>Novo</option>
+                  <option>Recorrente</option>
+                  <option>Só Teste</option>
+                </select>
+              </div>
+            </div>
+            <div class="module-footer">
+              <div class="module-footer-note">Salva o cadastro comercial com status, produto e cultura.</div>
+              <button class="btn btn-gold btn-sm" type="button" data-save-module="client">Salvar Cadastro</button>
+            </div>
+          </div>
+
+          <!-- MÓDULO 2: Atividades e Visitas -->
+          <div class="module-card" data-mod-ctx="operacional">
+            <div class="module-head">
+              <div class="module-head-left">
+                <span class="module-icon">🌾</span>
+                <div>
+                  <div class="module-title">Atividades e Visitas</div>
+                  <div class="module-copy">Registro de rotina interna ou externa com tipo, data e fazenda.</div>
+                </div>
+              </div>
+              <span class="module-chip">Operacional</span>
+            </div>
+            <div class="registry-form-grid">
+              <div class="registry-field">
+                <div class="option-label">Atividade <span class="required-mark">*</span></div>
+                <select class="option-select" id="fAtivModo">
+                  <option value="">Selecione</option>
+                  <option value="Interna">Interna</option>
+                  <option value="Externa">Externa</option>
+                </select>
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Data <span class="required-mark">*</span></div>
+                <input class="option-input" id="fAtivData" type="date">
+              </div>
+              <div class="registry-field registry-collapsible is-collapsed" id="fAtivInternaWrap">
+                <div class="option-label">Tipo (Interna)</div>
+                <select class="option-select" id="fAtivInterna">
+                  <option value="">Selecione</option>
+                  <option>Visita / Apresentação</option>
+                  <option>Aplicação</option>
+                  <option>Avaliação</option>
+                  <option>Comercial / Vendas</option>
+                  <option>Manutenção</option>
+                  <option>Outro</option>
+                </select>
+              </div>
+              <div class="registry-field registry-collapsible is-collapsed" id="fAtivExternaWrap">
+                <div class="option-label">Tipo (Externa)</div>
+                <select class="option-select" id="fAtivExterna">
+                  <option value="">Selecione</option>
+                  <option>Visita / Apresentação</option>
+                  <option>Aplicação</option>
+                  <option>Avaliação</option>
+                  <option>Comercial / Vendas</option>
+                  <option>Manutenção</option>
+                  <option>Outro</option>
+                </select>
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Produtor / Consultor</div>
+                <input class="option-input" id="fAtivProdutor" placeholder="Nome">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Fazenda</div>
+                <input class="option-input" id="fAtivFazenda" placeholder="Nome da fazenda">
+              </div>
+              <div class="registry-field span-2">
+                <div class="option-label">Observações</div>
+                <textarea class="option-textarea" id="fAtivObs" placeholder="Descreva a atividade realizada..."></textarea>
+              </div>
+            </div>
+            <div class="module-footer">
+              <div class="module-footer-note">Registra visita, aplicação ou avaliação de campo.</div>
+              <button class="btn btn-gold btn-sm" type="button" data-save-module="atividade">Salvar Atividade</button>
+            </div>
+          </div>
+
+          <!-- MÓDULO 3: Gastos (Financeiro) -->
+          <div class="module-card hidden" data-mod-ctx="financeiro">
+            <div class="module-head">
+              <div class="module-head-left">
+                <span class="module-icon">💸</span>
+                <div>
+                  <div class="module-title">Lançamento Financeiro</div>
+                  <div class="module-copy">Registro de despesas operacionais com categoria, valor e comprovante.</div>
+                </div>
+              </div>
+              <span class="module-chip financial">Financeiro</span>
+            </div>
+            <div class="registry-form-grid">
+              <div class="registry-field">
+                <div class="option-label">Tipo de Despesa <span class="required-mark">*</span></div>
+                <select class="option-select" id="fGastoTipo">
+                  <option value="">Selecione</option>
+                  <option>Combustível</option>
+                  <option>Manutenção</option>
+                  <option>Insumos</option>
+                  <option>Mão de obra</option>
+                  <option>Administrativo</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Responsável</div>
+                <select class="option-select" id="fGastoResp">
+                  <option value="">Selecione</option>
+                  <option>Campus</option>
+                  <option>Biocarbo</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+              <div class="registry-field registry-collapsible is-collapsed" id="fGastoRespOutroWrap">
+                <div class="option-label">Responsável — Outro</div>
+                <input class="option-input" id="fGastoRespOutro" placeholder="Nome do responsável">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Data <span class="required-mark">*</span></div>
+                <input class="option-input" id="fGastoData" type="date">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Valor (R$) <span class="required-mark">*</span></div>
+                <input class="option-input" id="fGastoValor" data-currency="true" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Centro de Custo</div>
+                <input class="option-input" id="fGastoCentro" placeholder="Ex: Fazenda / Frota">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Nota Fiscal / Ref.</div>
+                <input class="option-input" id="fGastoNF" placeholder="Número ou referência">
+              </div>
+              <div class="registry-field span-2">
+                <div class="option-label">Descrição</div>
+                <textarea class="option-textarea" id="fGastoDesc" placeholder="Descreva o gasto..."></textarea>
+              </div>
+            </div>
+            <div class="module-footer">
+              <div class="module-footer-note">Lança despesa no controle financeiro operacional.</div>
+              <button class="btn btn-gold btn-sm" type="button" data-save-module="gasto">Salvar Gasto</button>
+            </div>
+          </div>
+
+          <!-- MÓDULO 4: Controle de Veículo -->
+          <div class="module-card hidden" data-mod-ctx="veiculo">
+            <div class="module-head">
+              <div class="module-head-left">
+                <span class="module-icon">🚗</span>
+                <div>
+                  <div class="module-title">Controle de Veículo</div>
+                  <div class="module-copy">Registro de uso, abastecimento e KM percorrido.</div>
+                </div>
+              </div>
+              <span class="module-chip vehicle">Veículo</span>
+            </div>
+            <div class="registry-form-grid">
+              <div class="registry-field">
+                <div class="option-label">Veículo <span class="required-mark">*</span></div>
+                <input class="option-input" id="fVeicVeiculo" placeholder="Ex: Hilux SW4">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Placa</div>
+                <input class="option-input" id="fVeicPlaca" placeholder="ABC-1234">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Motorista</div>
+                <input class="option-input" id="fVeicMotorista" placeholder="Nome do motorista">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Data <span class="required-mark">*</span></div>
+                <input class="option-input" id="fVeicData" type="date">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">KM Inicial</div>
+                <input class="option-input" id="fVeicKmI" inputmode="numeric" data-numeric-only="true" placeholder="0">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">KM Final</div>
+                <input class="option-input" id="fVeicKmF" inputmode="numeric" data-numeric-only="true" placeholder="0">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Litros Abastecidos</div>
+                <input class="option-input" id="fVeicLitros" inputmode="decimal" placeholder="0,00">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Custo (R$)</div>
+                <input class="option-input" id="fVeicCusto" data-currency="true" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Destino</div>
+                <input class="option-input" id="fVeicDestino" placeholder="Cidade / Fazenda destino">
+              </div>
+              <div class="registry-field">
+                <div class="option-label">Observações</div>
+                <input class="option-input" id="fVeicObs" placeholder="Observação livre">
+              </div>
+            </div>
+            <div class="module-footer">
+              <div class="module-footer-note">Registra uso de veículo com KM e custo de abastecimento.</div>
+              <button class="btn btn-gold btn-sm" type="button" data-save-module="veiculo">Salvar Veículo</button>
+            </div>
+          </div>
+
+        </div><!-- /register-modules -->
+      </div><!-- /register-modal -->
+
+      <!-- LAYOUT RELATÓRIOS (LAB + HISTÓRICO) -->
+      <div class="report-layout">
+        <div class="report-lab">
+          <div class="option-title">Laboratório de Relatórios</div>
+          <div class="option-helper">Configure e gere relatórios personalizados por safra, cliente ou período.</div>
+          <div class="form-grid">
+            <div class="form-field">
+              <div class="option-label">Safra</div>
+              <select class="option-select" id="labSafra">
+                <option>2025/26</option><option>2024/25</option><option>2023/24</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <div class="option-label">Tipo de Relatório</div>
+              <select class="option-select" id="labTipo">
+                <option>Relatório de Campo</option>
+                <option>Relatório Financeiro</option>
+                <option>Relatório de Estoque</option>
+                <option>Relatório de Frota</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <div class="option-label">Cliente</div>
+              <input class="option-input" id="labCliente" placeholder="Nome do cliente ou produtor">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Período</div>
+              <input class="option-input" id="labPeriodo" type="month">
+            </div>
+            <div class="form-field span-2">
+              <div class="option-label">Observações Gerais</div>
+              <textarea class="option-textarea" id="labObs" placeholder="Contexto ou destaques do relatório..."></textarea>
+            </div>
+          </div>
+          <div class="report-actions">
+            <button class="btn btn-ghost" type="button" data-action="clear-lab-form">Limpar</button>
+            <button class="btn btn-gold" type="button" data-action="generate-report">Gerar Relatório</button>
+          </div>
+        </div>
+
+        <div class="report-history-panel">
+          <div class="history-head">
+            <div class="history-title">Histórico</div>
+            <span class="history-count" id="historyCount">0 relatórios</span>
+          </div>
+          <input type="text" id="buscaRelatorio" placeholder="🔍 Buscar por cliente, tipo ou safra..." class="option-input" style="width:100%;margin-bottom:14px;" >
+          <div id="historyList">
+            <div class="history-empty">
+              <div class="history-empty-icon">📋</div>
+              Nenhum relatório gerado ainda.<br>Use o laboratório ao lado.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /relatorios -->
+
+    <!-- ══════════ PANEL: CLIENTES ══════════ -->
+    <div class="section-panel" id="panel-clientes">
+      <div class="section-title">Clientes & Relacionamento</div>
+      <div class="section-sub">Pipeline comercial em formato CRM, com score financeiro, próxima ação e histórico de contato.</div>
+
+      <div class="clients-layout">
+        <!-- LISTA DE CLIENTES -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div>
+              <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">Total:</span>
+              <span id="clienteTotalCount" style="font-size:0.82rem;color:var(--text-muted);">0 clientes</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+              <input type="text" id="buscaCliente" placeholder="🔍 Buscar por nome, propriedade ou cidade..." class="option-input" style="flex:1;min-width:200px;" >
+              <select class="option-select" id="filtroStatusCliente" style="padding:7px 12px;font-size:0.8rem;" >
+                <option value="">Todos os status</option>
+                <option value="lead">Lead</option>
+                <option value="contact">Contato</option>
+                <option value="proposal">Proposta</option>
+                <option value="closed">Fechado</option>
+              </select>
+            </div>
+          </div>
+          <div id="clientesList">
+            <div class="clients-empty">
+              <div class="clients-empty-icon">👥</div>
+              <div>Nenhum cliente cadastrado ainda.</div>
+              <div style="font-size:0.8rem;margin-top:8px;">Use o formulário ao lado para adicionar o primeiro cliente.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORMULÁRIO NOVO CLIENTE -->
+        <div class="client-form-card" id="clienteFormCard">
+          <div class="client-form-title" id="clienteFormTitle">➕ Novo Cliente</div>
+          <input type="hidden" id="clienteEditId">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="form-field">
+              <div class="option-label">Nome / Razão Social <span class="required-mark">*</span></div>
+              <input class="option-input" id="cNome" placeholder="Nome do cliente ou empresa">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Propriedade / Fazenda</div>
+              <input class="option-input" id="cPropriedade" placeholder="Nome da propriedade">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Estágio do Pipeline</div>
+              <select class="option-select" id="cStatus">
+                <option value="lead">Lead</option>
+                <option value="contact">Contato</option>
+                <option value="proposal">Proposta</option>
+                <option value="closed">Fechado</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <div class="option-label">Cultura Principal</div>
+              <select class="option-select" id="cCultura">
+                <option value="">Selecione</option>
+                <option>Soja</option><option>Milho</option><option>Algodão</option>
+                <option>Cana-de-açúcar</option><option>Café</option><option>Misto</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <div class="option-label">Cidade / UF</div>
+              <input class="option-input" id="cCidade" placeholder="Ex: Rio Verde / GO">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Telefone / WhatsApp</div>
+              <input class="option-input" id="cTelefone" placeholder="(64) 9 9999-0000">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Último Contato</div>
+              <input class="option-input" id="cLastContact" type="date">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Próxima Ação</div>
+              <input class="option-input" id="cNextAction" placeholder="Ex: ligar na sexta, enviar proposta">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Valor Estimado (R$)</div>
+              <input class="option-input" id="cEstimatedValue" data-currency="true" placeholder="R$ 0,00" inputmode="numeric">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Probabilidade (%)</div>
+              <input class="option-input" id="cProbability" type="number" min="0" max="100" placeholder="0 a 100" inputmode="decimal">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Receita Total (R$)</div>
+              <input class="option-input" id="cTotalRevenue" data-currency="true" placeholder="R$ 0,00" inputmode="numeric">
+            </div>
+            <div class="form-field">
+              <div class="option-label">Forma de Pagamento</div>
+              <select class="option-select" id="cPgto">
+                <option value="">Selecione</option>
+                <option>À Vista</option><option>CPR</option><option>Barter</option>
+                <option>Safra</option><option>30/60/90</option>
+              </select>
+            </div>
+            <div class="form-field span-2">
+              <div class="option-label">Observação Inicial</div>
+              <textarea class="option-textarea" id="cObs" placeholder="Anotações, contexto, como chegou..." style="min-height:70px;"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--line-soft);">
+              <button class="btn btn-ghost btn-sm" type="button" id="clienteCancelBtn" data-action="cancel-cliente-edit" style="display:none;">Cancelar</button>
+              <button class="btn btn-gold" type="button" id="clienteSaveBtn" data-action="save-cliente">Cadastrar Cliente</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /clientes -->
+
+
+
+    <!-- ══════════ PANEL: ANÁLISES ══════════ -->
+    <div class="section-panel" id="panel-analises">
+      <div class="section-title">Análises & Insights</div>
+      <div class="section-sub">Insights automáticos baseados em estoque, CRM, financeiro e condições de solo.</div>
+
+      <div class="insight-summary-grid" id="insightSummaryList"></div>
+
+      <div style="margin-bottom:20px">
+        <div class="chart-title" style="margin-bottom:16px">Análise SWOT</div>
+        <div class="analysis-swot" id="swotList"></div>
+      </div>
+
+      <div>
+        <div class="chart-title" style="margin-bottom:16px">Plano de Ação Prioritário</div>
+        <div class="action-list" id="actionPlanList"></div>
+      </div>
+    </div>
+    <!-- /analises -->
+
+    <!-- ══════════ PANEL: CULTURAS (ESTOQUE) ══════════ -->
+    <div class="section-panel" id="panel-culturas">
+      <div class="section-title">Controle de Estoque</div>
+      <div class="section-sub">Movimentação com custo médio, estoque mínimo e visão atual do capital parado.</div>
+      <div class="stock-layout">
+        <div class="stock-form-card">
+          <div class="stock-tabs">
+            <button class="stock-tab-btn active" data-stock-target="entrada" >+ Entrada</button>
+            <button class="stock-tab-btn" data-stock-target="saida" >− Saída</button>
+            <button class="stock-tab-btn" data-stock-target="devolucao" >↩ Devolução</button>
+          </div>
+
+          <div class="stock-section active" id="stockEntrada">
+            <div class="form-grid">
+              <div class="form-field"><div class="option-label">Produto <span class="required-mark">*</span></div><select class="option-select" id="sEntProduto"><option value="">Selecione</option><option>Biopirol</option><option>Bio+Complex</option><option>Outro</option></select></div>
+              <div class="form-field"><div class="option-label">Lote</div><input class="option-input" id="sEntLote" placeholder="Nº do lote"></div>
+              <div class="form-field"><div class="option-label">Quantidade <span class="required-mark">*</span></div><input class="option-input" id="sEntQtd" inputmode="decimal" placeholder="0"></div>
+              <div class="form-field"><div class="option-label">Unidade</div><select class="option-select" id="sEntUnidade"><option>L</option><option>kg</option><option>un</option><option>sc</option></select></div>
+              <div class="form-field"><div class="option-label">Data</div><input class="option-input" id="sEntData" type="date"></div>
+              <div class="form-field"><div class="option-label">Valor Unit. (R$)</div><input class="option-input" id="sEntValor" data-currency="true" placeholder="R$ 0,00" inputmode="numeric"></div>
+              <div class="form-field span-2"><div class="option-label">Observação</div><input class="option-input" id="sEntObs" placeholder="Nota fiscal, fornecedor..."></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:16px">
+              <button class="btn btn-gold" type="button" data-save-stock="entrada">Registrar Entrada</button>
+            </div>
+          </div>
+
+          <div class="stock-section" id="stockSaida">
+            <div class="form-grid">
+              <div class="form-field"><div class="option-label">Produto <span class="required-mark">*</span></div><select class="option-select" id="sSaiProduto"><option value="">Selecione</option><option>Biopirol</option><option>Bio+Complex</option><option>Outro</option></select></div>
+              <div class="form-field"><div class="option-label">Cliente / Destino</div><input class="option-input" id="sSaiDestino" placeholder="Nome do cliente"></div>
+              <div class="form-field"><div class="option-label">Quantidade <span class="required-mark">*</span></div><input class="option-input" id="sSaiQtd" inputmode="decimal" placeholder="0"></div>
+              <div class="form-field"><div class="option-label">Unidade</div><select class="option-select" id="sSaiUnidade"><option>L</option><option>kg</option><option>un</option><option>sc</option></select></div>
+              <div class="form-field"><div class="option-label">Data</div><input class="option-input" id="sSaiData" type="date"></div>
+              <div class="form-field span-2"><div class="option-label">Observação</div><input class="option-input" id="sSaiObs" placeholder="Pedido, NF, aplicação..."></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:16px">
+              <button class="btn btn-gold" type="button" data-save-stock="saida">Registrar Saída</button>
+            </div>
+          </div>
+
+          <div class="stock-section" id="stockDevolucao">
+            <div class="form-grid">
+              <div class="form-field"><div class="option-label">Produto <span class="required-mark">*</span></div><select class="option-select" id="sDevProduto"><option value="">Selecione</option><option>Biopirol</option><option>Bio+Complex</option><option>Outro</option></select></div>
+              <div class="form-field"><div class="option-label">Cliente</div><input class="option-input" id="sDevCliente" placeholder="Nome do cliente"></div>
+              <div class="form-field"><div class="option-label">Quantidade <span class="required-mark">*</span></div><input class="option-input" id="sDevQtd" inputmode="decimal" placeholder="0"></div>
+              <div class="form-field"><div class="option-label">Motivo</div><input class="option-input" id="sDevMotivo" placeholder="Motivo da devolução"></div>
+              <div class="form-field"><div class="option-label">Data</div><input class="option-input" id="sDevData" type="date"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:16px">
+              <button class="btn btn-gold" type="button" data-save-stock="devolucao">Registrar Devolução</button>
+            </div>
+          </div>
+        </div>
+
+
+          <!-- PRODUTOS CADASTRADOS -->
+          <div class="stock-form-card" style="margin-top:24px;">
+            <div class="option-title" style="margin-bottom:4px;">📦 Cadastro de Produtos</div>
+            <div class="option-helper">Produtos disponíveis para movimentação de estoque.</div>
+            <span id="produtosCount" style="font-size:0.82rem;color:var(--text-muted);"></span>
+            <div class="form-grid" style="margin-bottom:12px;">
+              <div class="form-field">
+                <div class="option-label">Nome do Produto <span class="required-mark">*</span></div>
+                <input class="option-input" id="pNome" placeholder="Ex: Biopirol 400 SC">
+              </div>
+              <div class="form-field">
+                <div class="option-label">SKU / Código</div>
+                <input class="option-input" id="pSku" placeholder="Ex: BIO-400">
+              </div>
+              <div class="form-field">
+                <div class="option-label">Custo Unitário (R$)</div>
+                <input class="option-input" id="pCostPrice" data-currency="true" placeholder="R$ 0,00" inputmode="numeric">
+              </div>
+              <div class="form-field">
+                <div class="option-label">Unidade de Medida</div>
+                <select class="option-select" id="pUnidade">
+                  <option>L</option><option>kg</option><option>g</option>
+                  <option>un</option><option>sc</option><option>cx</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <div class="option-label">Categoria</div>
+                <select class="option-select" id="pCategoria">
+                  <option>Biológico</option><option>Fertilizante</option>
+                  <option>Defensivo</option><option>Semente</option><option>Outro</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <div class="option-label">Estoque Mínimo</div>
+                <input class="option-input" id="pStockMin" placeholder="0" inputmode="decimal">
+              </div>
+              <div class="form-field">
+                <div class="option-label">Emoji / Ícone</div>
+                <input class="option-input" id="pEmoji" placeholder="🧪">
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn btn-gold" type="button" data-action="save-produto">Cadastrar Produto</button>
+            </div>
+            <div class="product-grid" id="produtosList"></div>
+          </div>
+
+        <div class="stock-history">
+          <div class="history-head">
+            <div class="history-title">Movimentações</div>
+            <span class="history-count" id="stockCount">0 registros</span>
+          </div>
+          <div id="stockHistoryList">
+            <div class="history-empty"><div class="history-empty-icon">📦</div>Sem movimentações ainda.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /culturas -->
+
+    <!-- ══════════ PANEL: SOLO ══════════ -->
+    <div class="section-panel" id="panel-solo">
+      <div class="section-title">Solo & Clima</div>
+      <div class="section-sub">Parâmetros monitorados com alertas automáticos para pH, umidade e ação recomendada.</div>
+      <div class="soil-grid" id="soilGridList"></div>
+      <div class="kpi-grid" id="soilKpiList"></div>
+      <div class="chart-card" style="animation-delay:0.2s">
+        <div class="chart-title" style="margin-bottom:16px">Diagnóstico Automático do Solo</div>
+        <div class="alert-list" id="soilAnalysisList"></div>
+      </div>
+    </div>
+    <!-- /solo -->
+
+    <!-- ══════════ PANEL: MERCADO ══════════ -->
+    <div class="section-panel" id="panel-mercado">
+      <div class="section-title">Mercado & Commodities</div>
+      <div class="section-sub">Cotações simuladas e ranking de desempenho por cultura.</div>
+      <div class="market-grid" id="marketGridList"></div>
+      <div class="chart-card" style="margin-bottom:0;animation-delay:0.2s">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Ranking de Culturas por Rentabilidade</div>
+            <div class="chart-subtitle">Margem líquida estimada por hectare — Safra 25/26</div>
+          </div>
+        </div>
+        <div id="marketRankingList"></div>
+      </div>
+    </div>
+    <!-- /mercado -->
+
+    <!-- ══════════ PANEL: FINANCEIRO (OPERACIONAL) ══════════ -->
+    <div class="section-panel" id="panel-financeiro">
+      <div class="section-title">Financeiro & Fluxo de Caixa</div>
+      <div class="section-sub">Lançamentos reais de receita e despesa, clientes vinculados e caixa acumulado.</div>
+      <div class="chart-card" style="animation-delay:0.1s">
+        <div class="chart-title" style="margin-bottom:20px">Novo Lançamento</div>
+        <div class="form-grid" style="margin-bottom:0">
+          <div class="form-field">
+            <div class="option-label">Tipo</div>
+            <select class="option-select" id="txType">
+              <option value="income">Receita</option>
+              <option value="expense">Despesa</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <div class="option-label">Categoria</div>
+            <input class="option-input" id="txCategory" placeholder="Ex: Venda, Insumo, Frete">
+          </div>
+          <div class="form-field">
+            <div class="option-label">Valor (R$)</div>
+            <input class="option-input" id="txAmount" data-currency="true" placeholder="R$ 0,00" inputmode="numeric">
+          </div>
+          <div class="form-field">
+            <div class="option-label">Data</div>
+            <input class="option-input" id="txDate" type="date">
+          </div>
+          <div class="form-field">
+            <div class="option-label">Cliente vinculado</div>
+            <select class="option-select" id="txClientId">
+              <option value="">Sem cliente</option>
+            </select>
+          </div>
+          <div class="form-field span-2">
+            <div class="option-label">Descrição</div>
+            <input class="option-input" id="txDescription" placeholder="Detalhes do lançamento">
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:18px">
+          <button class="btn btn-gold" type="button" data-action="save-transaction">Salvar Lançamento</button>
+        </div>
+      </div>
+      <div class="finance-summary" id="financeSummaryList">
+      <div class="skeleton" style="height:72px"></div>
+      <div class="skeleton" style="height:72px"></div>
+      <div class="skeleton" style="height:72px"></div>
+      <div class="skeleton" style="height:72px"></div>
+      </div>
+      <div class="chart-card" style="animation-delay:0.2s">
+        <div class="chart-title" style="margin-bottom:20px">Despesas por Categoria</div>
+        <table class="expense-table">
+          <thead><tr><th>Categoria</th><th>Valor</th><th>% Total</th><th>Variação</th></tr></thead>
+          <tbody id="expenseTableBody"></tbody>
+        </table>
+      </div>
+      <div class="chart-card" style="animation-delay:0.25s">
+        <div class="chart-title" style="margin-bottom:20px">Fluxo de Caixa</div>
+        <table class="expense-table">
+          <thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Valor</th><th>Saldo</th></tr></thead>
+          <tbody id="cashFlowTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- /financeiro -->
+
+    <!-- ══════════ PANEL: ALERTAS ══════════ -->
+    <div class="section-panel" id="panel-alertas">
+      <div class="section-title">Alertas & Notificações</div>
+      <div class="section-sub">Itens que requerem atenção imediata da equipe.</div>
+      <div class="alert-list" id="alertList">
+      <div class="skeleton" style="height:72px;margin-bottom:8px"></div>
+      <div class="skeleton" style="height:72px"></div>
+      </div>
+    </div>
+    <!-- /alertas -->
+
+    <!-- ══════════ PANEL: CONFIGURAÇÕES ══════════ -->
+    <div class="section-panel" id="panel-config">
+      <div class="section-title">Configurações</div>
+      <div class="section-sub">Dados da empresa, aparência e preferências do sistema.</div>
+
+      <div class="config-section">
+        <div class="config-section-title">Dados da Empresa</div>
+        <div class="config-section-sub">Informações exibidas nos relatórios e documentos.</div>
+        <div class="config-grid">
+          <div class="form-field"><div class="option-label">Nome da Empresa</div><input class="option-input" value="AgroTech Brasil" id="cfgEmpresa"></div>
+          <div class="form-field"><div class="option-label">CNPJ</div><input class="option-input" value="00.000.000/0001-00" id="cfgCnpj"></div>
+          <div class="form-field"><div class="option-label">Responsável Técnico</div><input class="option-input" value="Eng. Agr. João Silva" id="cfgResp"></div>
+          <div class="form-field"><div class="option-label">Safra Vigente</div><select class="option-select" id="cfgSafra"><option>2025/26</option><option>2024/25</option></select></div>
+          <div class="form-field"><div class="option-label">Cidade / UF</div><input class="option-input" value="Rio Verde / GO" id="cfgCidade"></div>
+          <div class="form-field"><div class="option-label">WhatsApp</div><input class="option-input" value="64 9 9999-0000" id="cfgWpp"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:18px">
+          <button class="btn btn-gold" type="button" data-action="save-config" aria-label="Salvar configuracoes">Salvar Configurações</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">Aparência</div>
+        <div class="config-section-sub">Personalize o visual do sistema.</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-ghost" type="button" data-theme-choice="light" aria-label="Aplicar tema claro">☀️ Tema Claro</button>
+          <button class="btn btn-ghost" type="button" data-theme-choice="dark" aria-label="Aplicar tema escuro">🌙 Tema Escuro</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">Dados & Manutenção</div>
+        <div class="config-section-sub">Ferramentas de administração do banco de dados.</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-ghost" type="button" data-action="seed-firebase" aria-label="Popular Firebase com dados de demonstracao" title="Popular o Firebase com dados padrão de demonstração">🌱 Popular Firebase (Seed)</button>
+          <button class="btn btn-ghost" type="button" data-action="reset-seed" aria-label="Resetar protecao de seed">🔄 Resetar Seed</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">Sobre o Sistema</div>
+        <div class="config-section-sub">AgroInsight — Sistema de Análise Empresarial Agro</div>
+        <p style="font-size:0.82rem;color:var(--text-muted)">Versão 2.0 · Desenvolvido para o agronegócio brasileiro · Safra 2025/26</p>
+      </div>
+    </div>
+    <!-- /config -->
+
+  </div><!-- /content -->
+</main><!-- /main -->
+
+<!-- OVERLAY PREVIEW RELATÓRIO -->
+<div class="report-preview-overlay hidden" id="previewOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="report-preview-paper" id="previewPaper">
+    <div class="preview-stamp" id="previewStamp">RELATÓRIO</div>
+    <div class="preview-header">
+      <div class="preview-system">AgroInsight · Sistema de Análise Empresarial</div>
+      <div class="preview-title" id="previewTitle">Relatório de Campo</div>
+      <div class="preview-date" id="previewDate"></div>
+    </div>
+    <div class="preview-divider"></div>
+    <div id="previewBody"></div>
+    <div class="preview-divider"></div>
+    <button class="btn btn-ghost preview-close" type="button" data-action="close-preview" aria-label="Fechar relatorio">Fechar Relatório</button>
+  </div>
+</div>
+
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
