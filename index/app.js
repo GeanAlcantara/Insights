@@ -126,7 +126,6 @@ function exportToPDF() {
 const AppState = {
   currentPage: 'dashboard',
   currentTheme: 'light',
-  registerMode: false,
   registerCtx: 'operacional',
   reports: [],
   stockEntries: [],
@@ -152,6 +151,7 @@ const AppState = {
 
 const PAGE_TITLES = {
   dashboard: 'Visão Geral — Dashboard',
+  cadastro: 'Cadastro & Registros',
   relatorios: 'Relatórios de Campo',
   analises: 'Análises & Insights',
   culturas: 'Controle de Estoque',
@@ -164,6 +164,30 @@ const PAGE_TITLES = {
 };
 
 var clientCache = {};
+
+function syncTopActionButton(pageId) {
+  var topBtn = document.getElementById('topActionBtn');
+  if (!topBtn) return;
+  if (pageId === 'culturas') {
+    topBtn.textContent = 'Nova Movimentação';
+    topBtn.setAttribute('aria-label', 'Ir ao formulário de movimentação de estoque');
+    topBtn.style.display = '';
+    return;
+  }
+  if (pageId === 'financeiro') {
+    topBtn.textContent = 'Novo Lançamento';
+    topBtn.setAttribute('aria-label', 'Ir ao formulário de lançamento financeiro');
+    topBtn.style.display = '';
+    return;
+  }
+  if (pageId === 'dashboard' || pageId === 'cadastro' || pageId === 'relatorios') {
+    topBtn.textContent = 'Novo Cadastro';
+    topBtn.setAttribute('aria-label', 'Abrir página de cadastro');
+    topBtn.style.display = '';
+    return;
+  }
+  topBtn.style.display = 'none';
+}
 
 /* ══════════════════════════════════════════════════
    JS §3  TEMA
@@ -224,22 +248,7 @@ function setPage(pageId, navBtn) {
 
   AppState.currentPage = pageId;
 
-  // Botão de ação no topbar
-  var topBtn = document.getElementById('topActionBtn');
-  if (topBtn) {
-    if (pageId === 'dashboard' || pageId === 'relatorios') {
-      topBtn.textContent = 'Novo Relatório';
-      topBtn.style.display = '';
-    } else if (pageId === 'culturas') {
-      topBtn.textContent = 'Nova Movimentação';
-      topBtn.style.display = '';
-    } else if (pageId === 'financeiro') {
-      topBtn.textContent = 'Novo Lançamento';
-      topBtn.style.display = '';
-    } else {
-      topBtn.style.display = 'none';
-    }
-  }
+  syncTopActionButton(pageId);
 
   if (pageId === 'dashboard') reinitCharts();
   closeSidebar();
@@ -552,23 +561,8 @@ function initConditionalFields() {
 }
 
 /* ══════════════════════════════════════════════════
-   JS §8  MODO DE REGISTRO
+   JS §8  CONTEXTO DE REGISTRO
    ══════════════════════════════════════════════════ */
-function setRegisterMode(active) {
-  AppState.registerMode = active;
-  var modal = document.getElementById('registerModal');
-  if (!modal) return;
-  if (active) {
-    modal.classList.remove('hidden');
-    modal.setAttribute('aria-hidden', 'false');
-    var defaultBtn = document.querySelector('.form-switch-btn[data-ctx="operacional"]');
-    setRegCtx('operacional', defaultBtn);
-  } else {
-    modal.classList.add('hidden');
-    modal.setAttribute('aria-hidden', 'true');
-  }
-}
-
 function setRegCtx(ctx, btn) {
   AppState.registerCtx = ctx;
   // Atualiza botões da switcher
@@ -604,13 +598,12 @@ function handleTopAction() {
     if (txType) txType.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
-  if (AppState.currentPage !== 'relatorios') {
-    var relBtn = document.querySelector('.nav-item[data-page="relatorios"]');
-    setPage('relatorios', relBtn);
+  if (AppState.currentPage !== 'cadastro') {
+    var cadastroBtn = document.querySelector('.nav-item[data-page="cadastro"]');
+    setPage('cadastro', cadastroBtn);
   }
-  setRegisterMode(true);
-  var modal = document.getElementById('registerModal');
-  if (modal) modal.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  var registerPanel = document.getElementById('registerPanel');
+  if (registerPanel) registerPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 
@@ -794,11 +787,6 @@ function saveModule(type, btn) {
 /* ══════════════════════════════════════════════════
    JS §10  RELATÓRIOS — LAB, HISTÓRICO, PREVIEW
    ══════════════════════════════════════════════════ */
-function formatDate(dateStr) {
-  if (!dateStr) return new Intl.DateTimeFormat('pt-BR').format(new Date());
-  return new Intl.DateTimeFormat('pt-BR').format(new Date(dateStr + 'T12:00:00'));
-}
-
 function generateReport() {
   var safra   = document.getElementById('labSafra').value;
   var tipo    = document.getElementById('labTipo').value;
@@ -957,53 +945,6 @@ function setStockTab(type, btn) {
   if (section) section.classList.add('active');
 }
 
-function saveStock(type, btn) {
-  var original = btn.textContent;
-  var prefixes = { entrada: 'sEnt', saida: 'sSai', devolucao: 'sDev' };
-  var pfx = prefixes[type];
-  var produto = document.getElementById(pfx + 'Produto');
-  var qtd     = document.getElementById(pfx + 'Qtd');
-
-  if (!produto || !produto.value) { flashBtn(btn, '⚠ Selecione o produto'); return; }
-  if (!qtd    || !qtd.value)     { flashBtn(btn, '⚠ Informe a quantidade'); return; }
-
-  var entry = {
-    type: type,
-    produto: produto.value,
-    qtd: qtd.value,
-    unidade: (document.getElementById(pfx + 'Unidade') || {}).value || '',
-    data: (document.getElementById(pfx + 'Data') || {}).value || '',
-    createdAt: window.fbServerTimestamp ? window.fbServerTimestamp() : new Date().toISOString(),
-  };
-
-  btn.textContent = 'Salvando...';
-
-  if (window.firebaseDB) {
-    window.fbAddDoc(window.fbCollection(window.firebaseDB, 'stock'), entry).then(function() {
-      // Limpa campos
-      [pfx+'Produto', pfx+'Qtd', pfx+'Data'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-      btn.textContent = '✓ Registrado!';
-      btn.style.background = 'var(--green-bright)';
-      btn.style.color = 'var(--green-deep)';
-      setTimeout(function() {
-        btn.textContent = original;
-        btn.style.background = '';
-        btn.style.color = '';
-      }, 2000);
-    }).catch(function(e) {
-      flashBtn(btn, 'Erro ao salvar');
-    });
-  } else {
-    flashBtn(btn, '⚠ Firebase não conectado');
-    setTimeout(function() {
-      btn.textContent = original;
-    }, 2500);
-  }
-}
-
 function flashBtn(btn, msg) {
   var orig = btn.textContent;
   btn.textContent = msg;
@@ -1016,141 +957,11 @@ function flashBtn(btn, msg) {
   }, 2500);
 }
 
-function renderStockHistory() {
-  var list  = document.getElementById('stockHistoryList');
-  var count = document.getElementById('stockCount');
-  if (!list) return;
-  var entries = AppState.stockEntries;
-  if (count) count.textContent = entries.length + ' registros';
-
-  if (entries.length === 0) {
-    list.innerHTML = '<div class="history-empty"><div class="history-empty-icon">📦</div>Sem movimentações.</div>';
-    return;
-  }
-  var labels = { entrada: 'Entrada', saida: 'Saída', devolucao: 'Devolução' };
-  var html = '';
-  entries.forEach(function(e) {
-    html += '<div class="stock-history-item">';
-    html += '<span class="stock-type-badge ' + e.type + '">' + (labels[e.type] || e.type) + '</span>';
-    html += '<div class="stock-item-info"><div class="stock-item-name">' + escapeHtml(e.produto) + '</div>';
-    html += '<div class="stock-item-meta">' + (e.data || '--') + '</div></div>';
-    html += '<div class="stock-item-qty">' + escapeHtml(e.qtd) + ' ' + escapeHtml(e.unidade) + '</div>';
-    html += '</div>';
-  });
-  list.innerHTML = html;
-}
-
 
 
 /* ══════════════════════════════════════════════════
    JS §16  CLIENTES
    ══════════════════════════════════════════════════ */
-var _allClientes = [];
-
-function renderClientes(list) {
-  var container = document.getElementById('clientesList');
-  var countEl = document.getElementById('clienteTotalCount');
-  if (!container) return;
-  var isFiltered = arguments[1] === true;
-  if (!isFiltered) _allClientes = list;
-  var totalClientes = _allClientes.length;
-  if (countEl) {
-    if (isFiltered && list.length !== totalClientes) countEl.textContent = list.length + ' de ' + totalClientes + ' clientes';
-    else countEl.textContent = totalClientes + ' cliente' + (totalClientes !== 1 ? 's' : '');
-  }
-  var badge = document.getElementById('navBadgeClientes');
-  if (badge) badge.textContent = totalClientes;
-  if (list.length === 0) {
-    if (totalClientes > 0) container.innerHTML = '<div class="clients-empty"><div class="clients-empty-icon">🔎</div><div>Nenhum cliente encontrado para esta busca.</div></div>';
-    else container.innerHTML = '<div class="clients-empty"><div class="clients-empty-icon">👥</div><div>Nenhum cliente cadastrado ainda.</div></div>';
-    return;
-  }
-  var html = '';
-  list.forEach(function(c) {
-    var initials = (c.nome || 'CL').split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
-    var statusClass = (c.status || 'prospecto').toLowerCase();
-    var statusLabel = { ativo: 'Ativo', prospecto: 'Prospecto', inativo: 'Inativo', fechado: 'Fechado' }[statusClass] || c.status;
-    var createdStr = c.createdAt ? (c.createdAt.toDate ? c.createdAt.toDate().toLocaleDateString('pt-BR') : new Date(c.createdAt).toLocaleDateString('pt-BR')) : '--';
-    var timeline = c.timeline || [];
-    var tlHtml = '';
-    timeline.slice().reverse().forEach(function(ev) {
-      var dotClass = ev.type === 'edit' ? 'edit' : ev.type === 'close' ? 'close' : 'new';
-      var dateStr = ev.date ? new Date(ev.date).toLocaleString('pt-BR', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-      tlHtml += '<div class="tl-item"><div class="tl-dot ' + dotClass + '"></div><div class="tl-time">' + dateStr + '</div><div class="tl-text">' + escapeHtml(ev.text) + '</div></div>';
-    });
-    if (!tlHtml) tlHtml = '<div style="color:var(--text-muted);font-size:0.82rem;">Nenhuma interação registrada ainda.</div>';
-
-    html += '<div class="client-card" id="ccard-' + c.id + '">';
-    html += '<div class="client-card-head" role="button" tabindex="0" aria-expanded="false" data-client-toggle="' + escapeHtml(c.id) + '">';
-    html += '<div class="client-name-row"><div class="client-avatar">' + initials + '</div>';
-    html += '<div><div class="client-name">' + escapeHtml(c.nome || '') + '</div>';
-    html += '<div class="client-meta-row">';
-    if (c.propriedade) html += '<span>🏡 ' + escapeHtml(c.propriedade) + '</span>';
-    if (c.cidade) html += '<span>📍 ' + escapeHtml(c.cidade) + '</span>';
-    if (c.cultura) html += '<span>🌱 ' + escapeHtml(c.cultura) + '</span>';
-    if (c.area) html += '<span>📐 ' + escapeHtml(c.area) + ' ha</span>';
-    html += '<span>📅 Desde ' + createdStr + '</span>';
-    html += '</div></div></div>';
-    html += '<div style="display:flex;align-items:center;gap:8px;">';
-    html += '<span class="client-status-badge ' + statusClass + '">' + statusLabel + '</span>';
-    html += '<button class="client-expand-btn" type="button">▶</button>';
-    html += '</div></div>';
-
-    // Timeline expandable
-    html += '<div class="client-timeline-wrap">';
-    html += '<div class="client-timeline">';
-    // Edit form
-    html += '<div style="display:flex;gap:8px;margin-bottom:16px;">';
-    html += '<button class="btn btn-gold btn-sm" type="button" data-client-edit="' + escapeHtml(c.id) + '">✏️ Editar</button>';
-    html += '<div id="editStatusRow-' + c.id + '" style="display:flex;gap:6px;flex-wrap:wrap;">';
-    html += '<select class="option-select" id="editStatus-' + c.id + '" style="padding:6px 10px;font-size:0.78rem;"><option value="prospecto">Prospecto</option><option value="ativo">Ativo</option><option value="inativo">Inativo</option><option value="fechado">Fechado</option></select>';
-    html += '<input class="option-input" id="editNote-' + c.id + '" placeholder="Anotação rápida..." style="font-size:0.78rem;padding:6px 10px;">';
-    html += '<button class="btn btn-primary btn-sm" type="button" data-client-note="' + escapeHtml(c.id) + '">Salvar</button>';
-    html += '</div></div>';
-    html += '<div class="timeline">' + tlHtml + '</div>';
-    html += '</div></div></div>';
-  });
-  container.innerHTML = html;
-  // Set current status in select
-  list.forEach(function(c) {
-    var sel = document.getElementById('editStatus-' + c.id);
-    if (sel) sel.value = c.status || 'prospecto';
-  });
-  var editIdInput = document.getElementById('clienteEditId');
-  var activeEditId = editIdInput ? editIdInput.value : '';
-  if (activeEditId) {
-    var activeCard = document.getElementById('ccard-' + activeEditId);
-    if (activeCard) {
-      activeCard.classList.add('editing');
-      var activeToggle = activeCard.querySelector('[data-client-toggle]');
-      if (activeToggle) activeToggle.setAttribute('aria-expanded', 'true');
-    }
-  }
-  animateCards('clientesList', '.client-card');
-}
-
-function filterClients() {
-  var statusFilter = document.getElementById('filtroStatusCliente').value;
-  var buscaEl = document.getElementById('buscaCliente');
-  var textFilter = buscaEl ? buscaEl.value.toLowerCase().trim() : '';
-  var filtered = _allClientes.filter(function(c) {
-    var matchStatus = !statusFilter || (c.status || 'prospecto') === statusFilter;
-    var matchText = !textFilter ||
-      (c.nome || '').toLowerCase().includes(textFilter) ||
-      (c.propriedade || '').toLowerCase().includes(textFilter) ||
-      (c.cidade || '').toLowerCase().includes(textFilter) ||
-      (c.cultura || '').toLowerCase().includes(textFilter);
-    return matchStatus && matchText;
-  });
-  renderClientes(filtered, true);
-  if (filtered.length === 0 && (statusFilter || textFilter)) {
-    var filteredContainer = document.getElementById('clientesList');
-    if (filteredContainer) {
-      filteredContainer.innerHTML = '<div class="clients-empty"><div class="clients-empty-icon">🔍</div><div>Nenhum cliente encontrado para esta busca.</div></div>';
-    }
-  }
-}
-
 function toggleClientCard(id) {
   var card = document.getElementById('ccard-' + id);
   if (!card) return;
@@ -1159,162 +970,10 @@ function toggleClientCard(id) {
   if (toggle) toggle.setAttribute('aria-expanded', card.classList.contains('expanded') ? 'true' : 'false');
 }
 
-function saveCliente(btn) {
-  var nome = document.getElementById('cNome').value.trim();
-  if (!nome) { flashBtn(btn, '⚠ Informe o nome'); return; }
-  var editId = document.getElementById('clienteEditId').value;
-  var isEdit = !!editId;
-
-  var data = {
-    nome: nome,
-    propriedade: document.getElementById('cPropriedade').value.trim(),
-    cultura: document.getElementById('cCultura').value,
-    area: document.getElementById('cArea').value.trim(),
-    cidade: document.getElementById('cCidade').value.trim(),
-    telefone: document.getElementById('cTelefone').value.trim(),
-    status: document.getElementById('cStatus').value,
-    pgto: document.getElementById('cPgto').value,
-    obs: document.getElementById('cObs').value.trim(),
-  };
-
-  if (!window.firebaseDB) { flashBtn(btn, 'Firebase não conectado'); return; }
-  btn.textContent = 'Salvando...';
-
-  if (isEdit) {
-    // Update + add timeline entry
-    var note = 'Cadastro editado. Status: ' + data.status + (data.obs ? ' — ' + data.obs : '');
-    window.fbAddDoc(window.fbCollection(window.firebaseDB, 'clientes/' + editId + '/timeline'), {
-      type: 'edit', text: note, date: new Date().toISOString(), author: 'Usuário'
-    }).then(function() {
-      return window.fbSetDoc(window.fbDoc(window.firebaseDB, 'clientes', editId), data, { merge: true });
-    }).then(function() {
-      btn.textContent = '✓ Atualizado!';
-      btn.style.background = 'var(--green-bright)';
-      btn.style.color = 'var(--green-deep)';
-      document.querySelectorAll('.client-card.editing').forEach(function(c) {
-        c.classList.remove('editing');
-      });
-      cancelClienteEdit();
-      setTimeout(function(){ btn.textContent='Cadastrar Cliente'; btn.style.background=''; btn.style.color=''; }, 2000);
-    }).catch(function(){ flashBtn(btn, 'Erro ao salvar'); });
-  } else {
-    data.createdAt = window.fbServerTimestamp();
-    window.fbAddDoc(window.fbCollection(window.firebaseDB, 'clientes'), data).then(function(docRef) {
-      // Add creation timeline event
-      return window.fbAddDoc(window.fbCollection(window.firebaseDB, 'clientes/' + docRef.id + '/timeline'), {
-        type: 'new', text: 'Cliente cadastrado. Status: ' + data.status + (data.obs ? ' — ' + data.obs : ''), date: new Date().toISOString(), author: 'Usuário'
-      });
-    }).then(function() {
-      btn.textContent = '✓ Cadastrado!';
-      btn.style.background = 'var(--green-bright)';
-      btn.style.color = 'var(--green-deep)';
-      document.querySelectorAll('.client-card.editing').forEach(function(c) {
-        c.classList.remove('editing');
-      });
-      clearClienteForm();
-      setTimeout(function(){ btn.textContent='Cadastrar Cliente'; btn.style.background=''; btn.style.color=''; }, 2000);
-    }).catch(function(e){ flashBtn(btn, 'Erro: ' + e.message); });
-  }
-}
-
-function saveClienteNote(clienteId, btn) {
-  var note = document.getElementById('editNote-' + clienteId).value.trim();
-  var status = document.getElementById('editStatus-' + clienteId).value;
-  if (!note && !status) { flashBtn(btn, '⚠ Adicione uma nota'); return; }
-  if (!window.firebaseDB) return;
-  btn.textContent = '...';
-  var text = note || ('Status alterado para: ' + status);
-  var tlData = { type: 'edit', text: text, date: new Date().toISOString(), author: 'Usuário' };
-  window.fbAddDoc(window.fbCollection(window.firebaseDB, 'clientes/' + clienteId + '/timeline'), tlData).then(function() {
-    if (status) {
-      return window.fbSetDoc(window.fbDoc(window.firebaseDB, 'clientes', clienteId), { status: status }, { merge: true });
-    }
-  }).then(function() {
-    document.getElementById('editNote-' + clienteId).value = '';
-    btn.textContent = '✓';
-    setTimeout(function(){ btn.textContent='Salvar'; }, 1500);
-  }).catch(function(){ btn.textContent='Salvar'; });
-}
-
-function startEditCliente(id) {
-  var editId = document.getElementById('clienteEditId').value;
-  if (editId && editId !== id) {
-    if (!confirm('Você tem uma edição em andamento. Deseja descartá-la?')) return;
-  }
-  var c = _allClientes.find(function(x){ return x.id === id; });
-  if (!c) return;
-  document.getElementById('clienteEditId').value = id;
-  document.getElementById('cNome').value = c.nome || '';
-  document.getElementById('cPropriedade').value = c.propriedade || '';
-  document.getElementById('cCultura').value = c.cultura || '';
-  document.getElementById('cArea').value = c.area || '';
-  document.getElementById('cCidade').value = c.cidade || '';
-  document.getElementById('cTelefone').value = c.telefone || '';
-  document.getElementById('cStatus').value = c.status || 'prospecto';
-  document.getElementById('cPgto').value = c.pgto || '';
-  document.getElementById('cObs').value = c.obs || '';
-  document.getElementById('clienteFormTitle').textContent = '✏️ Editando: ' + (c.nome || '');
-  document.getElementById('clienteSaveBtn').textContent = 'Salvar Alterações';
-  document.getElementById('clienteCancelBtn').style.display = '';
-  document.querySelectorAll('.client-card').forEach(function(cardEl) { cardEl.classList.remove('editing'); });
-  var card = document.getElementById('ccard-' + id);
-  if (card) {
-    card.classList.add('editing');
-    card.classList.add('expanded');
-    var cardToggle = card.querySelector('[data-client-toggle]');
-    if (cardToggle) cardToggle.setAttribute('aria-expanded', 'true');
-  }
-  document.getElementById('clienteFormCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function cancelClienteEdit() {
-  document.getElementById('clienteEditId').value = '';
-  document.getElementById('clienteFormTitle').textContent = '➕ Novo Cliente';
-  document.getElementById('clienteSaveBtn').textContent = 'Cadastrar Cliente';
-  document.getElementById('clienteCancelBtn').style.display = 'none';
-  document.querySelectorAll('.client-card').forEach(function(cardEl) {
-    cardEl.classList.remove('editing');
-    var cardToggle = cardEl.querySelector('[data-client-toggle]');
-    if (cardToggle) cardToggle.setAttribute('aria-expanded', cardEl.classList.contains('expanded') ? 'true' : 'false');
-  });
-  clearClienteForm();
-}
-
-function clearClienteForm() {
-  ['cNome','cPropriedade','cArea','cCidade','cTelefone','cObs'].forEach(function(id){
-    var el = document.getElementById(id); if (el) el.value = '';
-  });
-  var sel1 = document.getElementById('cCultura'); if(sel1) sel1.value='';
-  var sel2 = document.getElementById('cStatus'); if(sel2) sel2.value='prospecto';
-  var sel3 = document.getElementById('cPgto'); if(sel3) sel3.value='';
-}
-
 /* ══════════════════════════════════════════════════
    JS §17  PRODUTOS CADASTRO
    ══════════════════════════════════════════════════ */
 var _produtos = [];
-
-function saveProduto(btn) {
-  var nome = document.getElementById('pNome').value.trim();
-  if (!nome) { flashBtn(btn, '⚠ Informe o nome'); return; }
-  if (!window.firebaseDB) { flashBtn(btn, 'Firebase não conectado'); return; }
-  var data = {
-    nome: nome,
-    sku: document.getElementById('pSku').value.trim(),
-    unidade: document.getElementById('pUnidade').value,
-    categoria: document.getElementById('pCategoria').value,
-    minimo: document.getElementById('pMinimo').value.trim(),
-    emoji: document.getElementById('pEmoji').value.trim() || '📦',
-    createdAt: window.fbServerTimestamp()
-  };
-  btn.textContent = 'Salvando...';
-  window.fbAddDoc(window.fbCollection(window.firebaseDB, 'produtos'), data).then(function() {
-    btn.textContent = '✓ Cadastrado!';
-    btn.style.background='var(--green-bright)';btn.style.color='var(--green-deep)';
-    ['pNome','pSku','pMinimo','pEmoji'].forEach(function(id){ var el=document.getElementById(id);if(el)el.value=''; });
-    setTimeout(function(){btn.textContent='Cadastrar Produto';btn.style.background='';btn.style.color='';}, 2000);
-  }).catch(function(e){ flashBtn(btn, 'Erro: '+e.message); });
-}
 
 function deleteProduto(id, btn) {
   if (!confirm('Remover este produto do cadastro?')) return;
@@ -1344,48 +1003,6 @@ function deleteProduto(id, btn) {
         btn.disabled = false;
       }
     });
-}
-
-
-function updateProdutoSelects(produtos) {
-  var selects = ['sEntProduto','sSaiProduto','sDevProduto'];
-  selects.forEach(function(id){
-    var sel = document.getElementById(id);
-    if (!sel) return;
-    var current = sel.value;
-    sel.innerHTML = '<option value="">Selecione</option>';
-    produtos.forEach(function(p){
-      var opt = document.createElement('option');
-      opt.value = p.nome;
-      opt.textContent = (p.emoji||'') + ' ' + p.nome;
-      sel.appendChild(opt);
-    });
-    if (current) sel.value = current;
-  });
-}
-
-function renderProdutos(list) {
-  _produtos = list;
-  var container = document.getElementById('produtosList');
-  var countEl = document.getElementById('produtosCount');
-  if (!container) return;
-  if (countEl) countEl.textContent = list.length + ' produto' + (list.length !== 1 ? 's' : '') + ' cadastrado' + (list.length !== 1 ? 's' : '');
-  if (list.length === 0) {
-    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.82rem;padding:16px 0;">Nenhum produto cadastrado. Use o formulário acima.</div>';
-    return;
-  }
-  var html = '';
-  list.forEach(function(p) {
-    if (p._deleted) return;
-    html += '<div class="product-card"><div class="product-emoji">' + (p.emoji||'📦') + '</div>';
-    html += '<div class="product-name">' + escapeHtml(p.nome) + '</div>';
-    if (p.sku) html += '<div class="product-sku">' + escapeHtml(p.sku) + '</div>';
-    html += '<div class="product-unit">' + escapeHtml(p.unidade||'') + ' · ' + escapeHtml(p.categoria||'') + '</div>';
-    if (p.minimo) html += '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Mín: ' + p.minimo + ' ' + (p.unidade||'') + '</div>';
-    html += '<div class="product-actions"><button class="product-del-btn" type="button" data-product-id="' + escapeHtml(p.id) + '">🗑 Remover</button></div>';
-    html += '</div>';
-  });
-  container.innerHTML = html || '<div style="color:var(--text-muted);font-size:0.82rem;padding:16px 0;">Nenhum produto cadastrado.</div>';
 }
 
 /* ══════════════════════════════════════════════════
@@ -1463,8 +1080,9 @@ function initSemanticUI() {
   var stockTabs = document.querySelector('.stock-tabs');
   if (stockTabs) stockTabs.setAttribute('role', 'tablist');
 
-  var formSwitcher = document.querySelector('.form-switcher');
-  if (formSwitcher) formSwitcher.setAttribute('role', 'tablist');
+  document.querySelectorAll('.form-switcher').forEach(function(formSwitcher) {
+    formSwitcher.setAttribute('role', 'tablist');
+  });
 
   document.querySelectorAll('.tab-bar .tab').forEach(function(tab) {
     tab.setAttribute('role', 'tab');
@@ -1495,9 +1113,6 @@ function initSemanticUI() {
 
   var previewOverlay = document.getElementById('previewOverlay');
   if (previewOverlay) previewOverlay.setAttribute('aria-hidden', previewOverlay.classList.contains('hidden') ? 'true' : 'false');
-
-  var registerModal = document.getElementById('registerModal');
-  if (registerModal) registerModal.setAttribute('aria-hidden', registerModal.classList.contains('hidden') ? 'true' : 'false');
 }
 
 function bindDependencyFallbacks() {
@@ -1506,129 +1121,6 @@ function bindDependencyFallbacks() {
   chartScript.dataset.bound = '1';
   chartScript.addEventListener('error', function() {
     canRenderCharts();
-  });
-}
-
-function bindUIEvents() {
-  if (document.body.dataset.uiBound === '1') return;
-  document.body.dataset.uiBound = '1';
-
-  document.addEventListener('click', function(e) {
-    var actionEl = e.target.closest('[data-action]');
-    if (actionEl) {
-      var action = actionEl.dataset.action;
-      if (action === 'close-sidebar') closeSidebar();
-      else if (action === 'toggle-sidebar') toggleSidebar();
-      else if (action === 'toggle-theme') toggleTheme();
-      else if (action === 'export-pdf') exportToPDF();
-      else if (action === 'top-action') handleTopAction();
-      else if (action === 'close-register') setRegisterMode(false);
-      else if (action === 'clear-lab-form') clearLabForm();
-      else if (action === 'generate-report') generateReport();
-      else if (action === 'cancel-cliente-edit') cancelClienteEdit();
-      else if (action === 'save-cliente') saveCliente(actionEl);
-      else if (action === 'save-produto') saveProduto(actionEl);
-      else if (action === 'save-config') saveConfig();
-      else if (action === 'seed-firebase' && window.seedFirebase) window.seedFirebase();
-      else if (action === 'reset-seed') resetSeedProtection();
-      else if (action === 'close-preview') closePreview();
-      return;
-    }
-
-    var pageBtn = e.target.closest('.nav-item[data-page]');
-    if (pageBtn) {
-      setPage(pageBtn.dataset.page, pageBtn);
-      return;
-    }
-
-    var tabBtn = e.target.closest('.tab-bar .tab[data-tab]');
-    if (tabBtn) {
-      setDashTab(tabBtn);
-      return;
-    }
-
-    var regCtxBtn = e.target.closest('.form-switch-btn[data-ctx]');
-    if (regCtxBtn) {
-      setRegCtx(regCtxBtn.dataset.ctx, regCtxBtn);
-      return;
-    }
-
-    var stockTabBtn = e.target.closest('.stock-tab-btn[data-stock-target]');
-    if (stockTabBtn) {
-      setStockTab(stockTabBtn.dataset.stockTarget, stockTabBtn);
-      return;
-    }
-
-    var moduleBtn = e.target.closest('[data-save-module]');
-    if (moduleBtn) {
-      saveModule(moduleBtn.dataset.saveModule, moduleBtn);
-      return;
-    }
-
-    var stockBtn = e.target.closest('[data-save-stock]');
-    if (stockBtn) {
-      saveStock(stockBtn.dataset.saveStock, stockBtn);
-      return;
-    }
-
-    var themeChoiceBtn = e.target.closest('[data-theme-choice]');
-    if (themeChoiceBtn) {
-      applyTheme(themeChoiceBtn.dataset.themeChoice);
-      return;
-    }
-
-    var reportItem = e.target.closest('[data-report-id]');
-    if (reportItem) {
-      openPreview(reportItem.dataset.reportId);
-      return;
-    }
-
-    var clientToggle = e.target.closest('[data-client-toggle]');
-    if (clientToggle) {
-      toggleClientCard(clientToggle.dataset.clientToggle);
-      return;
-    }
-
-    var clientEdit = e.target.closest('[data-client-edit]');
-    if (clientEdit) {
-      startEditCliente(clientEdit.dataset.clientEdit);
-      return;
-    }
-
-    var clientNote = e.target.closest('[data-client-note]');
-    if (clientNote) {
-      saveClienteNote(clientNote.dataset.clientNote, clientNote);
-      return;
-    }
-
-    var productDelete = e.target.closest('.product-del-btn[data-product-id]');
-    if (productDelete) {
-      deleteProduto(productDelete.dataset.productId, productDelete);
-    }
-  });
-
-  document.addEventListener('input', function(e) {
-    if (e.target.id === 'buscaCliente') filterClients();
-    if (e.target.id === 'buscaRelatorio') filterReports();
-  });
-
-  document.addEventListener('change', function(e) {
-    if (e.target.id === 'filtroStatusCliente') filterClients();
-  });
-
-  document.addEventListener('keydown', function(e) {
-    var keyboardTarget = e.target.closest('[data-report-id], [data-client-toggle]');
-    if (keyboardTarget && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      if (keyboardTarget.dataset.reportId) openPreview(keyboardTarget.dataset.reportId);
-      if (keyboardTarget.dataset.clientToggle) toggleClientCard(keyboardTarget.dataset.clientToggle);
-      return;
-    }
-
-    if (e.key !== 'Escape') return;
-    closeSidebar();
-    closePreview();
-    if (AppState.registerMode) setRegisterMode(false);
   });
 }
 
@@ -2632,7 +2124,6 @@ function bindUIEvents() {
       else if (action === 'toggle-theme') toggleTheme();
       else if (action === 'export-pdf') exportToPDF();
       else if (action === 'top-action') handleTopAction();
-      else if (action === 'close-register') setRegisterMode(false);
       else if (action === 'clear-lab-form') clearLabForm();
       else if (action === 'generate-report') generateReport();
       else if (action === 'cancel-cliente-edit') cancelClienteEdit();
@@ -2699,7 +2190,6 @@ function bindUIEvents() {
     if (e.key !== 'Escape') return;
     closeSidebar();
     closePreview();
-    if (AppState.registerMode) setRegisterMode(false);
   });
 }
 
@@ -2744,329 +2234,6 @@ function bindUIEvents() {
   // Inicia listeners do Firebase
   window.addEventListener('firebase-ready', function() {
     initRealtimeData(fbConnectTimeout);
-    return;
-    // --- DASHBOARD E UI LISTENERS ---
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "kpis"), function(snapshot) {
-      if(snapshot.empty) return;
-      var htmlDash = '', htmlBridge = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        var card = '<div class="kpi-card '+(d.color||'green')+'"><div class="kpi-icon">'+(d.icon||'')+'</div><div class="kpi-label">'+d.label+'</div><div class="kpi-value">'+d.value+'</div><div class="kpi-change '+(d.changeClass||'')+'">'+d.change+'</div></div>';
-        if (d.type === 'dash') htmlDash += card;
-        else if (d.type === 'bridge') htmlBridge += card;
-      });
-      var el1 = document.getElementById('dashKpiList');
-      if (el1) { el1.innerHTML = htmlDash; animateCards('dashKpiList', '.kpi-card'); }
-      var el2 = document.getElementById('bridgeKpiList');
-      if (el2) { el2.innerHTML = htmlBridge; animateCards('bridgeKpiList', '.kpi-card'); }
-      var el3 = document.getElementById('dashOpKpiList');
-      if (el3) { el3.innerHTML = htmlBridge; animateCards('dashOpKpiList', '.kpi-card'); }
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "alertas"), function(snapshot) {
-      var el = document.getElementById('alertList');
-      var alertBadge = document.getElementById('navBadgeAlertas');
-
-      if (snapshot.empty) {
-        if (el) {
-          el.innerHTML = [
-            '<div class="history-empty" style="padding: 32px 20px;">',
-            '<div class="history-empty-icon" style="font-size:2rem;">✅</div>',
-            '<div style="font-weight:600;margin-bottom:4px;">Tudo em ordem</div>',
-            '<div style="font-size:0.82rem;color:var(--text-muted);">Nenhum alerta ativo no momento.</div>',
-            '</div>'
-          ].join('');
-        }
-        if (alertBadge) { alertBadge.textContent = '0'; alertBadge.style.display = 'none'; }
-        return;
-      }
-
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<div class="alert-item ' + (d.severity || 'info') + '">';
-        html += '<div class="alert-icon">' + (d.icon || '') + '</div>';
-        html += '<div class="alert-content">';
-        html += '<div class="alert-title">' + d.title + '</div>';
-        html += '<div class="alert-desc">' + d.desc + '</div>';
-        html += '<div class="alert-meta">' + d.meta + '</div>';
-        html += '</div></div>';
-      });
-
-      if (el) { el.innerHTML = html; animateCards('alertList', '.alert-item'); }
-
-      if (alertBadge) {
-        var ac = snapshot.docs.length;
-        alertBadge.textContent = ac;
-        alertBadge.style.display = ac > 0 ? '' : 'none';
-      }
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "mercado"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<div class="commodity-card"><div class="commodity-name">'+d.name+'</div><div class="commodity-price">'+d.price+'</div><div class="commodity-unit">'+d.unit+'</div><div class="commodity-change '+(d.changeClass||'')+'">'+d.change+'</div></div>';
-      });
-      var el = document.getElementById('marketGridList'); if (el) { el.innerHTML = html; animateCards('marketGridList', '.commodity-card'); }
-    });
-
-    
-    // --- LISNTENERS EXTRAS ---
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "insights"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<div class="insight-summary-card"><div class="insight-summary-icon">'+d.icon+'</div><div class="insight-summary-info"><div class="insight-summary-title">'+d.title+'</div><div class="insight-summary-desc">'+d.desc+'</div></div></div>';
-      });
-      var el = document.getElementById('insightSummaryList'); if (el) { el.innerHTML = html; animateCards('insightSummaryList', '.insight-summary-card'); }
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "swot"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        var itemsHtml = (d.items || []).map(i => '<li>'+i+'</li>').join('');
-        html += '<div class="swot-block '+d.type+'"><div class="swot-title">'+d.title+'</div><ul class="swot-list">'+itemsHtml+'</ul></div>';
-      });
-      var el = document.getElementById('swotList'); if (el) el.innerHTML = html;
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "actionplan"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<div class="action-item"><span class="action-status '+d.status+'" title="'+d.statusTitle+'"></span><div class="action-info"><div class="action-title">'+d.title+'</div><div class="action-meta">'+d.meta+'</div></div></div>';
-      });
-      var el = document.getElementById('actionPlanList'); if (el) el.innerHTML = html;
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "soil"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<div class="soil-card"><div class="soil-param">'+d.param+'</div><div class="soil-value">'+d.value+' <span class="soil-unit">'+d.unit+'</span></div><div class="soil-bar-wrap"><div class="soil-bar '+(d.barColor||'')+'" style="width:'+d.barWidth+'%"></div></div><div class="soil-status '+(d.statusClass||'ok')+'">'+d.statusText+'</div></div>';
-      });
-      var el = document.getElementById('soilGridList'); if (el) { el.innerHTML = html; animateCards('soilGridList', '.soil-card'); }
-      var el2 = document.getElementById('dashSoilGrid'); if (el2) el2.innerHTML = html;
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "soilkpis"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<div class="kpi-card '+(d.color||'green')+'"><div class="kpi-icon">'+(d.icon||'')+'</div><div class="kpi-label">'+d.label+'</div><div class="kpi-value">'+d.value+'</div><div class="kpi-change '+(d.changeClass||'')+'">'+d.change+'</div></div>';
-      });
-      var el = document.getElementById('soilKpiList'); if (el) el.innerHTML = html;
-      var el2 = document.getElementById('dashSoilKpis'); if (el2) el2.innerHTML = html;
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "ranking"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<div class="rank-item"><span class="rank-num '+(d.isTop?'top':'')+'">'+d.position+'</span><div class="rank-info"><div class="rank-name">'+d.name+'</div><div class="rank-bar-wrap"><div class="rank-bar '+(d.barColor||'green')+'" style="width:'+d.width+'%"></div></div></div><div class="rank-value">'+d.value+'</div></div>';
-      });
-      var el = document.getElementById('marketRankingList'); if (el) { el.innerHTML = html; animateCards('marketRankingList', '.rank-item'); }
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "finance_summary"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<div class="finance-card"><div class="finance-label">'+d.label+'</div><div class="finance-value '+(d.valueClass||'')+'">'+d.value+'</div></div>';
-      });
-      var el = document.getElementById('financeSummaryList'); if (el) { el.innerHTML = html; animateCards('financeSummaryList', '.finance-card'); }
-      var el2 = document.getElementById('dashFinanceSummary'); if (el2) el2.innerHTML = html;
-    });
-
-    window.fbOnSnapshot(window.fbCollection(window.firebaseDB, "finance_expenses"), function(snapshot) {
-      if(snapshot.empty) return;
-      var html = '';
-      snapshot.docs.forEach(function(doc) {
-        var d = doc.data();
-        html += '<tr><td>'+d.category+'</td><td>'+d.value+'</td><td>'+d.percent+'</td><td class="'+(d.variantClass||'')+'">'+d.variantTxt+'</td></tr>';
-      });
-      var el = document.getElementById('expenseTableBody'); if (el) el.innerHTML = html;
-      var el2 = document.getElementById('dashExpenseBody'); if (el2) el2.innerHTML = html;
-    });
-
-    // ----------------------------\n    // SEEDER
-    window.seedFirebase = function() {
-      try {
-        if (localStorage.getItem('agroinsight-seeded')) {
-          if (!confirm('Firebase já foi populado anteriormente. Deseja sobrescrever os dados?')) return;
-        }
-      } catch(e) {}
-
-      var kpis = [
-        { id: "d1", type: "dash", icon: "💰", label: "Receita Total", value: "R$2,84M", change: "▲ 12,4% vs. safra anterior", changeClass: "up", color: "green" },
-        { id: "d2", type: "dash", icon: "🌿", label: "Área Manejada", value: "4.280 ha", change: "▲ 8,1% vs. safra anterior", changeClass: "up", color: "gold" },
-        { id: "d3", type: "dash", icon: "👥", label: "Clientes Ativos", value: "147", change: "▲ +23 novos este mês", changeClass: "up", color: "amber" },
-        { id: "d4", type: "dash", icon: "📊", label: "Produtividade Média", value: "68,4 sc/ha", change: "▼ 2,1% vs. meta", changeClass: "down", color: "soil" },
-        { id: "b1", type: "bridge", icon: "🌱", label: "Soja plantada", value: "1.798 ha", change: "▲ 92% da meta", changeClass: "up", color: "green" },
-        { id: "b2", type: "bridge", icon: "🌽", label: "Milho 2ª safra", value: "1.197 ha", change: "▲ Em janela ideal", changeClass: "up", color: "gold" }
-      ];
-      kpis.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "kpis", d.id), d); });
-
-      var alertas = [
-        { id: "a1", icon: "🔴", title: "Estoque de Biopirol abaixo do mínimo", desc: "Nível atual: 120 L. Risco de desabastecimento.", meta: "⏱ Há 2 horas · Estoque", severity: "critical" },
-        { id: "a2", icon: "⚠️", title: "2 veículos com revisão vencida", desc: "Agendar manutenção preventiva.", meta: "⏱ Há 1 dia · Frota", severity: "warning" }
-      ];
-      alertas.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "alertas", d.id), d); });
-
-      var mercado = [
-        { id: "m1", name: "🌱 Soja — SC 60kg", price: "R$142,80", unit: "por saca · B3", change: "▲ +2,4% no mês", changeClass: "up" },
-        { id: "m2", name: "🌽 Milho — SC 60kg", price: "R$58,40", unit: "por saca · B3", change: "▼ -1,1% no mês", changeClass: "down" }
-      ];
-      mercado.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "mercado", d.id), d); });
-
-      
-      var insights = [
-        { id: "i1", icon: "📈", title: "Alta Produtividade no Talhão 4", desc: "A produtividade excedeu a média em 15%, impulsionada por nova adubação." },
-        { id: "i2", icon: "⚠️", title: "Custo com Combustível Excedido", desc: "O consumo de diesel está 8% acima da meta estipulada para a fase de plantio." }
-      ];
-      insights.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "insights", d.id), d); });
-
-      var swot = [
-        { id: "s1", type: "strength", title: "💪 Forças", items: ["Maquinário com manutenção em dia", "Equipe treinada e estabilizada", "Solo fértil (CTC alta)"] },
-        { id: "s2", type: "weakness", title: "⚠️ Fraquezas", items: ["Dependência de um único fornecedor de insumos", "Custo logístico alto"] },
-        { id: "s3", type: "opportunity", title: "🌟 Oportunidades", items: ["Preços da soja em tendência de alta (CBOT)", "Mercados de crédito rural aquecidos"] },
-        { id: "s4", type: "threat", title: "🌩️ Ameaças", items: ["Previsão de La Niña forte", "Taxa de juros (Selic) alta para novos financiamentos"] }
-      ];
-      swot.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "swot", d.id), d); });
-
-      var actionplan = [
-        { id: "ap1", status: "pending", statusTitle: "Pendente", title: "Cotar diesel de fornecedores regionais", meta: "Reduzir custo de combustível antes da colheita." },
-        { id: "ap2", status: "done", statusTitle: "Concluído", title: "Revisão nas colheitadeiras", meta: "Finalizado em 12/Ago." }
-      ];
-      actionplan.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "actionplan", d.id), d); });
-
-      var soil = [
-        { id: "so1", param: "pH em CaCl2", value: "6,2", unit: "", barColor: "", barWidth: "65", statusClass: "ok", statusText: "✓ Ideal para soja" },
-        { id: "so2", param: "Matéria Orgânica", value: "3,2", unit: "%", barColor: "", barWidth: "64", statusClass: "ok", statusText: "✓ Nível adequado" },
-        { id: "so3", param: "Potássio (K)", value: "142", unit: "mg/dm³", barColor: "warning", barWidth: "48", statusClass: "warning", statusText: "⚠ Atenção — baixo" }
-      ];
-      soil.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "soil", d.id), d); });
-
-      var soilkpis = [
-        { id: "sk1", icon: "🌧️", label: "Chuvas (mês)", value: "186 mm", change: "▲ 94% da média histórica", changeClass: "up", color: "gold" },
-        { id: "sk2", icon: "💨", label: "Umidade Relativa", value: "68%", change: "→ Estável", changeClass: "", color: "amber" },
-        { id: "sk3", icon: "☀️", label: "Dias sem chuva", value: "4 dias", change: "▲ Janela para aplicação", changeClass: "up", color: "soil" }
-      ];
-      soilkpis.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "soilkpis", d.id), d); });
-
-      var ranking = [
-        { id: "r1", position: "1", isTop: true, name: "🌿 Soja", width: "100", barColor: "green", value: "R$ 6.240/ha" },
-        { id: "r2", position: "2", isTop: false, name: "🌽 Milho Safrinha", width: "75", barColor: "gold", value: "R$ 4.680/ha" },
-        { id: "r3", position: "3", isTop: false, name: "❄ Algodão", width: "45", barColor: "amber", value: "R$ 2.800/ha" }
-      ];
-      ranking.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "ranking", d.id), d); });
-
-      var financesummary = [
-        { id: "fs1", label: "Despesas Totais", value: "R$ 1.124.680", valueClass: "expense" },
-        { id: "fs2", label: "Margem Líquida", value: "60,5%", valueClass: "" },
-        { id: "fs3", label: "Resultado Líquido", value: "R$ 1.722.640", valueClass: "income" }
-      ];
-      financesummary.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "finance_summary", d.id), d); });
-
-      var financeexpenses = [
-        { id: "fx1", category: "🛢️ Combustível", value: "R$ 380.000", percent: "33,8%", variantClass: "loss", variantTxt: "+12%" },
-        { id: "fx2", category: "🧪 Fertilizantes", value: "R$ 420.000", percent: "37,3%", variantClass: "", variantTxt: "-2%" },
-        { id: "fx3", category: "🚜 Manutenção", value: "R$ 180.000", percent: "16,0%", variantClass: "loss", variantTxt: "+4%" }
-      ];
-      financeexpenses.forEach(function(d) { window.fbSetDoc(window.fbDoc(window.firebaseDB, "finance_expenses", d.id), d); });
-
-      try { localStorage.setItem('agroinsight-seeded', '1'); } catch(e) {}
-      showToast('Firebase populado com sucesso! Dados injetados em todas as coleções.', 'success');
-    };
-    // --------------------------------
-    
-
-    // Listener Clientes (com subcoleção timeline)
-    var _clientesCache = {};
-    window.fbOnSnapshot(
-      window.fbQuery(window.fbCollection(window.firebaseDB, "clientes"), window.fbOrderBy("createdAt", "desc")),
-      function(snapshot) {
-        if (snapshot.empty) { renderClientes([]); return; }
-        snapshot.docs.forEach(function(docSnap) {
-          var cid = docSnap.id;
-          var cdata = Object.assign({ id: cid }, docSnap.data());
-          _clientesCache[cid] = Object.assign(_clientesCache[cid] || {}, cdata);
-          // Listen to timeline subcollection
-          if (!_clientesCache[cid]._tlBound) {
-            _clientesCache[cid]._tlBound = true;
-            window.fbOnSnapshot(
-              window.fbQuery(window.fbCollection(window.firebaseDB, 'clientes/' + cid + '/timeline'), window.fbOrderBy('date', 'asc')),
-              function(tlSnap) {
-                if (_clientesCache[cid]) {
-                  _clientesCache[cid].timeline = tlSnap.docs.map(function(td){ return td.data(); });
-                }
-                var orderedList = snapshot.docs
-                  .map(function(d){ return _clientesCache[d.id]; })
-                  .filter(Boolean);
-                _allClientes = orderedList;
-                filterClients();
-              }
-            );
-          }
-        });
-      }
-    );
-
-    // Listener Produtos
-    window.fbOnSnapshot(
-      window.fbQuery(window.fbCollection(window.firebaseDB, "produtos"), window.fbOrderBy("createdAt", "desc")),
-      function(snapshot) {
-        var list = snapshot.docs.map(function(doc){ return Object.assign({ id: doc.id }, doc.data()); });
-        var active = list.filter(function(p){ return !p._deleted; });
-        renderProdutos(active);
-        updateProdutoSelects(active);
-      },
-      function(err) { console.warn('Produtos listener error:', err.message); }
-    );
-
-    // deleteDoc is exposed from the module script above if fbDeleteDoc is undefined
-    if (!window.fbDeleteDoc && window.fbSetDoc) {
-      // fallback: mark as deleted via setDoc
-      window.fbDeleteDoc = function(docRef) {
-        return window.fbSetDoc(docRef, { _deleted: true }, { merge: true });
-      };
-    }
-
-    // Listener Reports
-    window.fbOnSnapshot(
-      window.fbCollection(window.firebaseDB, "reports"),
-      function(snapshot) {
-        AppState.reports = snapshot.docs.map(function(doc) {
-           var data = doc.data();
-           return Object.assign({ id: doc.id }, data, { createdAt: data.createdAt ? (data.createdAt.toDate ? data.createdAt.toDate().toISOString() : data.createdAt) : new Date().toISOString() });
-        }).sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
-        filterReports();
-        updateNavBadge();
-        updateTopbarTime();
-      }
-    );
-
-    // Listener Stock
-    window.fbOnSnapshot(
-      window.fbCollection(window.firebaseDB, "stock"),
-      function(snapshot) {
-        AppState.stockEntries = snapshot.docs.map(function(doc) {
-           var data = doc.data();
-           return Object.assign({ id: doc.id }, data, { createdAt: data.createdAt ? (data.createdAt.toDate ? data.createdAt.toDate().toISOString() : data.createdAt) : new Date().toISOString() });
-        }).sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
-        renderStockHistory();
-      }
-    );
   });
 
   // Tema
@@ -3080,9 +2247,7 @@ function bindUIEvents() {
     if (savedCfg) applyConfigToDOM(savedCfg);
   } catch(e) {}
 
-  // Botão de ação inicial
-  var topBtn = document.getElementById('topActionBtn');
-  if (topBtn) topBtn.style.display = '';
+  syncTopActionButton(AppState.currentPage);
 
   // Gráficos
   initProdChart();

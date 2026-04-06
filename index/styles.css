@@ -1011,13 +1011,11 @@ body.sidebar-open{
 /* ══════════════════════════════════════════════════
    §13  MÓDULOS DE REGISTRO
    ══════════════════════════════════════════════════ */
-.register-modal{
+.register-panel{
   background:var(--card-bg);border-radius:var(--radius);
   padding:28px;box-shadow:var(--shadow-sm);
   border:1px solid var(--line-soft);
-  margin-bottom:24px;
 }
-.register-modal.hidden{display:none;}
 .register-head{
   display:flex;align-items:flex-start;
   justify-content:space-between;gap:14px;
@@ -1258,8 +1256,6 @@ body.sidebar-open{
   .sidebar-backdrop,
   #topbar,
   .tab-bar,
-  .registry-modal,
-  .register-modal,
   #previewOverlay,
   .btn,
   button,

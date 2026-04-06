@@ -37,6 +37,13 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5h7.5L18 8v11.5H7z"/><path d="M14.5 4.5V8H18"/><path d="M9.2 11.5h6.1"/><path d="M9.2 14.5h6.1"/><path d="M9.2 17.5h4.2"/></svg>
       </span>
     </button>
+    <button class="nav-item" type="button" data-page="cadastro">
+      <span class="nav-label">Cadastro</span>
+      <span class="nav-divider"></span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5h6"/><path d="M8 6.5h8a1.5 1.5 0 0 1 1.5 1.5v10A1.5 1.5 0 0 1 16 19.5H8A1.5 1.5 0 0 1 6.5 18V8A1.5 1.5 0 0 1 8 6.5Z"/><path d="M9.5 12h5"/><path d="M9.5 15h3.5"/><path d="M9 4.5a1.5 1.5 0 0 0-1.5 1.5v.5h9V6A1.5 1.5 0 0 0 15 4.5"/></svg>
+      </span>
+    </button>
     <button class="nav-item" type="button" data-page="analises">
       <span class="nav-label">Análises</span>
       <span class="nav-divider"></span>
@@ -137,7 +144,7 @@
     <div class="topbar-actions">
       <button class="btn btn-ghost" id="themeToggleBtn" type="button" aria-label="Alternar tema" data-action="toggle-theme">Tema: Claro</button>
       <button class="btn btn-ghost" id="exportPdfBtn" type="button" aria-label="Exportar pagina atual para impressao" data-action="export-pdf">🖨️ Exportar PDF</button>
-      <button class="btn btn-gold" id="topActionBtn" type="button" aria-label="Executar acao principal" data-action="top-action">Novo Relatório</button>
+      <button class="btn btn-gold" id="topActionBtn" type="button" aria-label="Abrir pagina de cadastro" data-action="top-action">Novo Cadastro</button>
     </div>
   </header>
 
@@ -231,15 +238,16 @@
     </div>
     <!-- /dashboard -->
 
-    <!-- ══════════ PANEL: RELATÓRIOS ══════════ -->
-    <div class="section-panel" id="panel-relatorios">
+    <!-- ══════════ PANEL: CADASTRO ══════════ -->
+    <div class="section-panel" id="panel-cadastro">
+      <div class="section-title">Central de Cadastros</div>
+      <div class="section-sub">Cadastre clientes, atividades, gastos e veículos em uma página fixa, integrada à navegação principal do sistema.</div>
 
-      <!-- MODAL DE REGISTRO -->
-      <div class="register-modal hidden" id="registerModal">
+      <div class="register-panel" id="registerPanel">
         <div class="register-head">
           <div class="register-head-copy">
-            <div class="option-title">Novo Relatório de Campo</div>
-            <div class="option-helper">Preencha os módulos abaixo e salve cada card individualmente.</div>
+            <div class="option-title">Novo Registro Operacional</div>
+            <div class="option-helper">Preencha os módulos abaixo e salve cada card individualmente, sem sair do fluxo principal da aplicação.</div>
           </div>
           <div class="register-actions">
             <div class="form-switcher">
@@ -247,7 +255,6 @@
               <button class="form-switch-btn" type="button" data-ctx="financeiro" >Financeiro</button>
               <button class="form-switch-btn" type="button" data-ctx="veiculo" >Veículo</button>
             </div>
-            <button class="btn btn-ghost btn-sm" type="button" data-action="close-register">Fechar ✕</button>
           </div>
         </div>
         <div class="register-status" id="registerStatus">Contexto operacional ativo. Preencha o módulo desejado e salve individualmente.</div>
@@ -579,7 +586,14 @@
           </div>
 
         </div><!-- /register-modules -->
-      </div><!-- /register-modal -->
+      </div><!-- /register-panel -->
+    </div>
+    <!-- /cadastro -->
+
+    <!-- ══════════ PANEL: RELATÓRIOS ══════════ -->
+    <div class="section-panel" id="panel-relatorios">
+      <div class="section-title">Relatórios de Campo</div>
+      <div class="section-sub">Gere relatórios por safra, cliente ou período e acompanhe o histórico salvo em tempo real.</div>
 
       <!-- LAYOUT RELATÓRIOS (LAB + HISTÓRICO) -->
       <div class="report-layout">
